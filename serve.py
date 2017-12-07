@@ -108,7 +108,43 @@ class Transcriber():
             jsfile.write(output.to_json(indent=2))
         with open(os.path.join(outdir, 'align.csv'), 'w') as csvfile:
             csvfile.write(output.to_csv())
+        # add file datas
+        sens_end_index = trans.ms.get_sentences_index()
+        res = output.to_json()
+        res = json.loads(res,encoding='utf-8', strict=True)
+        time_sentences_index = []
+        ss_dot = 0
+        s_pos = None
+        try:
+            for i, w in enumerate(res['words']):
+                if w["case"] != "success":
+                    continue
+                end_v = w['endOffset']
+                start_v = w['startOffset']
+                if s_pos is None:
+                    s_pos = start_v
 
+                if end_v >= sens_end_index[ss_dot]:
+                    ss_dot += 1
+                    time_sentences_index.append((s_pos, end_v))
+                    s_pos = end_v
+            if len(sens_end_index) != len(time_sentences_index):
+                time_sentences_index.append((s_pos, res['words'][-1]["endOffset"]))
+
+            #print sens_end_index, len(sens_end_index)
+            #print time_sentences_index, len(time_sentences_index)
+            sens_str = trans.ms.get_sentences_string()
+            save_ss = ""
+            for i, t in enumerate(time_sentences_index):
+                #print "{{time}}%s/%s{{end}}" % (str(round(float(t[0]), 2)), str(round(float(t[1]), 2)))
+                #print "{{raw}}%s{{end}}" % (str(sens_str[i]))
+                save_ss+="{{time}}"+str(round(float(t[0]), 2))+"/"+str(round(float(t[1]), 2))+"{{end}}\n"
+                save_ss+="{{raw}}"+sens_str[i]+"{{end}}\n"
+            with open(os.path.join(outdir, 'time.csv'), 'w') as timefile:
+                timefile.write(save_ss)
+        except Exception as e:
+            print traceback.format_exc()
+            
         # Inline the alignment into the index.html file.
         htmltxt = open(get_resource('www/view_alignment.html')).read()
         htmltxt = htmltxt.replace("var INLINE_JSON;", "var INLINE_JSON=%s;" % (output.to_json()));
