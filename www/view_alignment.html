@@ -304,7 +304,8 @@ function show_downloads() {
     $d.textContent = "Download as: ";
     var uid = window.location.pathname.split("/")[2];
     // Name, path, title, inhibit-on-file:///
-    [["CSV", "align.csv", "Word alignment CSV"],
+    [["TIME", "time.csv", "Time alignment CSV"],
+     ["CSV", "align.csv", "Word alignment CSV"],
      ["JSON", "align.json", "JSON word/phoneme alignment data"],
      ["Zip", "/zip/" + uid + ".zip", "Standalone zipfile", true]]
         .forEach(function(x) {
