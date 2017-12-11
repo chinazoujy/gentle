@@ -115,6 +115,7 @@ class Transcriber():
         time_sentences_index = []
         ss_dot = 0
         s_pos = None
+        time_pos = 0
         try:
             for i, w in enumerate(res['words']):
                 if w["case"] != "success":
@@ -123,13 +124,15 @@ class Transcriber():
                 start_v = w['startOffset']
                 if s_pos is None:
                     s_pos = start_v
-
+                    time_pos = i
+                    
                 if end_v >= sens_end_index[ss_dot]:
                     ss_dot += 1
-                    time_sentences_index.append((s_pos, end_v))
+                    time_sentences_index.append((res['words'][time_pos]["start"], res['words'][i]["end"]))
+                    time_pos = i
                     s_pos = end_v
             if len(sens_end_index) != len(time_sentences_index):
-                time_sentences_index.append((s_pos, res['words'][-1]["endOffset"]))
+                time_sentences_index.append((res['words'][time_pos]["start"], res['words'][-1]["end"]))
 
             #print sens_end_index, len(sens_end_index)
             #print time_sentences_index, len(time_sentences_index)
